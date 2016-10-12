@@ -8,14 +8,16 @@
     <ul>
       <% for (i in urls) {%>
         <li>
-          <form method="POST" action="/urls/<%= i %>/delete">
           <%= urls[i] %>
-          <input type="submit" value="delete this URL">
+          <form method="POST" action="/urls/<%= i %>/delete">
+            <input type="submit" value="DELETE this URL">
+          </form>
+          <form method="POST" action="/urls/<%= i %>/">
+            <input type="submit" value="EDIT this URL">
           </form>
         </li>
       <% } %>
     </ul>
-
 
   <a href='/urls/new'> Shorten a New ULR </a>
 
