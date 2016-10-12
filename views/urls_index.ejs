@@ -5,13 +5,18 @@
 </head>
 <body>
     <!-- Write EJS code here to display shortened links -->
-  <ul>
-    <% for (i in urls) {%>
-    <li>
-      <%= urls[i] %>
+    <ul>
+      <% for (i in urls) {%>
+        <li>
+          <form method="POST" action="/urls/<%= i %>/delete">
+          <%= urls[i] %>
+          <input type="submit" value="delete this URL">
+          </form>
+        </li>
       <% } %>
-    </li>
-  </ul>
+    </ul>
+
+
   <a href='/urls/new'> Shorten a New ULR </a>
 
 </body>

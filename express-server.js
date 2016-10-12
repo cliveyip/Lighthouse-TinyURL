@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 function generateRandomString() {
   var text = "";
   var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-  for( var i=0; i < 5; i++ )
+  for( var i = 0; i < 6; i++ )
       text += possible.charAt(Math.floor(Math.random() * possible.length));
   return text;
 }
@@ -39,7 +39,15 @@ app.post("/urls", (req, res) => {
   var longURL = req.body.longURL;
   urlDatabase[shortURL] = longURL;
   console.log(req.body);  // debug statement to see POST parameters
-  res.redirect("/urls/" + shortURL);
+  //res.redirect("/urls/" + shortURL);
+  res.redirect("/urls");
+});
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  var shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+  console.log('delete ' + shortURL);
+  res.redirect("/urls/");
 });
 
 app.get("/u/:shortURL", (req, res) => {
