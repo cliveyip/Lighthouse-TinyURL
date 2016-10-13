@@ -64,10 +64,20 @@ app.get("/urls", (req, res) => {
 
 // Create new URL
 app.get("/urls/new", (req, res) => {
-  var templateVars = {
-    userEmail: getEmailFromID(req.cookies.user_id)
-  };
-  res.render("urls_new", templateVars);
+  // if user is logged in
+  if (req.cookies.user_id) {
+  // display the new url page
+    console.log('user is loggedin, cookie exists');
+    var templateVars = {
+      userEmail: getEmailFromID(req.cookies.user_id)
+    };
+    res.render("urls_new", templateVars);
+  } else {
+  // display the log-in page
+    console.log('user is not logged in, cookie does not exist');
+    res.redirect("/login")
+  }
+
 });
 
 // Edit a URL
@@ -88,23 +98,17 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls", (req, res) => {
   var shortURL = "";
   var longURL = "";
-  console.log("req.body.shortURL: " + req.body.shortURL);
   if (!urlDatabase.hasOwnProperty(req.body.shortURL)){
     // coming from create new
     shortURL = generateRandomString();
     longURL = req.body.longURL;
-    console.log('generate new shortURL');
   } else {
     // coming from change URL
     shortURL = req.body.shortURL;
     longURL = req.body.longURL;
-    console.log('matched existing URL shortURL');
   }
   urlDatabase[shortURL] = longURL;
 
-  console.log(urlDatabase);
-  console.log(req.body);  // debug statement to see POST parameters
-  //res.redirect("/urls/" + shortURL);
   res.redirect("/urls");
 });
 
