@@ -5,16 +5,15 @@
 </head>
 
 <body>
-  <% if (username) { %>
-  <p> You are logged in as: <strong> <%= username %> </strong> </p>
+  <% if (userEmail) { %>
+  <p> You are logged in as: <strong> <%= userEmail %> </strong> </p>
     <form method="POST" action="/logout">
       <input type="submit" value="Log out" >
     </form>
   <% } else { %>
-  <form method="POST" action="/login">
-    <input type="text" name="username" value="">
-    <input type="submit" value="Log in" >
-  </form>
+  <a href = "/register"> Register </a>
+  <br/>
+  <a href = "/login"> Log in </a>
   <% } %>
 </body>
 </html>
