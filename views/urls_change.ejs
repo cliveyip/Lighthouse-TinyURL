@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <body>
+  <% include partials/_header %>
   <p> ShortURL: <%= shortURL %> <p>
   <form method="POST" action="/urls">
     <input type="hidden" name="shortURL" value="<%= shortURL %>">

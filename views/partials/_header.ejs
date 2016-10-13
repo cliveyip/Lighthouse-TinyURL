@@ -1,1 +1,20 @@
-<title>URL Shortener</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>URL Shortener</title>
+</head>
+
+<body>
+  <% if (username) { %>
+  <p> You are logged in as: <strong> <%= username %> </strong> </p>
+    <form method="POST" action="/logout">
+      <input type="submit" value="Log out" >
+    </form>
+  <% } else { %>
+  <form method="POST" action="/login">
+    <input type="text" name="username" value="">
+    <input type="submit" value="Log in" >
+  </form>
+  <% } %>
+</body>
+</html>

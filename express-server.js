@@ -1,4 +1,5 @@
 var express = require("express");
+var cookieParser = require('cookie-parser');
 var app = express();
 var PORT = process.env.PORT || 8080; // default port 8080
 const bodyParser = require("body-parser");
@@ -11,28 +12,54 @@ function generateRandomString() {
   return text;
 }
 
-var urlDatabase = {
+let urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
 app.use(bodyParser.urlencoded());
+app.use(cookieParser());
 
 app.set('view engine', 'ejs');
 
+// Root page
+app.get("/", (req, res) => {
+  res.send('welcome to url shortener');
+});
+
+// Browse all URLs
 app.get("/urls", (req, res) => {
-  var templateVars = { urls: urlDatabase };
+  var templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
   res.render("urls_index", templateVars);
   console.log(urlDatabase);
 });
 
+// Create new URL
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  var templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render("urls_new", templateVars);
 });
 
+// Edit a URL
+
+
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id };
+  let templateVars = {
+    shortURL: req.params.id,
+    username: req.cookies["username"]
+  };
   res.render("urls_show", templateVars);
+});
+
+// Redirect to the longURL (actual website)
+app.get("/u/:shortURL", (req, res) => {
+  let longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
 });
 
 app.post("/urls", (req, res) => {
@@ -63,7 +90,8 @@ app.post("/urls/:shortURL/", (req, res) => {
   console.log('change: ' + req.params.shortURL);
   res.render("urls_change", {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL]
+    longURL: urlDatabase[req.params.shortURL],
+    username: req.cookies["username"]
   });
 });
 
@@ -74,9 +102,14 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls/");
 });
 
-app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
+app.post("/login", (req, res) => {
+  res.cookie('username', req.body.username, {expires: new Date(Date.now() + 900000)});
+  res.redirect("/urls");
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie('username');
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
