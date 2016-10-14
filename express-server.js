@@ -3,6 +3,7 @@ var cookieParser = require('cookie-parser');
 var app = express();
 var PORT = process.env.PORT || 8080; // default port 8080
 const bodyParser = require("body-parser");
+const bcrypt = require('bcrypt-nodejs');
 
 // let urlDatabase = {
 //   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -163,7 +164,8 @@ app.post("/login", (req, res) => {
   // if user matching the email is found
   if (userEmailExists(req.body.email)) {
     // if password is correct
-    if (req.body.password == users[getIDFromEmail(req.body.email)]['password']) {
+    // if (req.body.password == users[getIDFromEmail(req.body.email)]['password'])
+    if (bcrypt.compareSync(req.body.password, users[getIDFromEmail(req.body.email)]['password'])) {
       res.cookie('user_id', getIDFromEmail(req.body.email));
     } else {
       // password is incorrect, return 403
@@ -206,7 +208,7 @@ app.post("/register", (req, res) => {
     users[userRandomID] = {
       id: userRandomID,
       email: req.body.email,
-      password: req.body.password,
+      password: bcrypt.hashSync(req.body.password),
       urlDatabase: {}
     };
     res.cookie('user_id', userRandomID);
