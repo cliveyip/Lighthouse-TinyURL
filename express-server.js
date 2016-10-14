@@ -6,15 +6,16 @@ const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt-nodejs');
 const cookieSession = require('cookie-session');
 
-let users = {UserID:{
-  id: 'UserID',
-  email: 'a@a.com',
-  password: 'abcdefg',
-  urlDatabase: {
-    "b2xVn2": "http://www.lighthouselabs.ca",
-    "9sm5xK": "http://www.google.com"
-  }
-}};
+let users = {};
+
+// let users = { testUserID:{
+//   id: 'testUserID',
+//   email: 'user@test.com',
+//   password: '123',
+//   urlDatabase: {
+//     "b2xVn2": "http://www.lighthouselabs.ca",
+//   }
+// }};
 
 function generateRandomString() {
   var text = "";
@@ -50,8 +51,29 @@ function getAllLinks() {
       allLinks[j] = users[i]['urlDatabase'][j];
     }
   }
-  console.log(allLinks);
   return allLinks;
+  // allLinks = {"b2xVn2": "http://www.lighthouselabs.ca",
+  //             "asdfew": "http://www.google.ca"}
+}
+
+function linkExists(link){
+  var allLinks = getAllLinks();
+  for (var i in allLinks) {
+    if (i == link) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function linkBelongsToUser(userDB, reqLink) {
+  for (var i in userDB) {
+    if (i == reqLink) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
 
 app.use(bodyParser.urlencoded({extended: false}));
@@ -79,6 +101,7 @@ app.get("/urls", (req, res) => {
     templateVars['urls'] = users[userID]['urlDatabase'];
   } else {
     templateVars['urls'] = "";
+    // TODO get
   }
   res.render("urls_index", templateVars);
 });
@@ -99,15 +122,6 @@ app.get("/urls/new", (req, res) => {
 
 });
 
-// Edit a URL
-app.get("/urls/:id", (req, res) => {
-  let templateVars = {
-    shortURL: req.params.id,
-    userEmail: getEmailFromID(req.session.user_id)
-  };
-  res.render("urls_show", templateVars);
-});
-
 // Redirect to the longURL (actual website)
 app.get("/u/:shortURL", (req, res) => {
   var allURL = getAllLinks();
@@ -118,8 +132,6 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls", (req, res) => {
   var shortURL = "";
   var longURL = "";
-  //var userID = req.session.user_id;
-  //console.log('userID: ' + userID);
   if (!users[req.session.user_id]['urlDatabase'].hasOwnProperty(req.body.shortURL)){
     // coming from create new
     shortURL = generateRandomString();
@@ -129,12 +141,32 @@ app.post("/urls", (req, res) => {
     shortURL = req.body.shortURL;
     longURL = req.body.longURL;
   }
-  console.log(shortURL);
   users[req.session.user_id]['urlDatabase'][shortURL] = longURL;
   res.redirect("/urls");
 });
 
-// Change URL
+// Edit a URL
+app.get("/urls/:id", (req, res) => {
+  if (!req.session.user_id) {
+    res.status(401).send("Please log in before editing links.");
+  } else {
+    if (!linkExists(req.params.id)) {
+      res.status(404).send("The link you are trying to edit does not exist.");
+    } else {
+      if (!linkBelongsToUser(users[req.session.user_id]['urlDatabase'], req.params.id)) {
+        res.status(403).send("The link you are trying to edit does not belong to you.");
+      }
+    }
+    res.status(200);
+    let templateVars = {
+      shortURL: req.params.id,
+      longURL: users[req.session.user_id]['urlDatabase'][req.params.id],
+      userEmail: getEmailFromID(req.session.user_id)
+    };
+    res.render("urls_change", templateVars);
+  }
+});
+
 app.post("/urls/:shortURL/", (req, res) => {
   console.log('change: ' + req.params.shortURL);
   res.render("urls_change", {
